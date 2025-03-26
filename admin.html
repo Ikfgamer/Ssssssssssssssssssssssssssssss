@@ -1,0 +1,613 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Tournament Hub</title>
+  <meta name="description" content="Tournament Hub Administrator Dashboard">
+  <meta name="theme-color" content="#1f2440">
+
+  <!-- Web App Manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Icons -->
+  <link rel="icon" type="image/png" href="favicon.ico">
+  <link rel="apple-touch-icon" href="icon-192x192.png">
+
+  <!-- Firebase Libraries -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div id="loading-screen">
+    <div class="spinner"></div>
+    <p>Loading Admin Dashboard...</p>
+  </div>
+
+  <!-- Main Admin Layout -->
+  <div id="admin-panel" class="admin-layout" style="display: none;">
+    <!-- Sidebar Navigation -->
+    <div class="admin-sidebar">
+      <div class="admin-logo">
+        <i class="fas fa-trophy"></i> Admin Panel
+      </div>
+      
+      <div class="admin-user">
+        <img id="admin-avatar" src="https://ui-avatars.com/api/?name=Admin+User&background=random&color=fff" alt="Admin Avatar">
+        <div class="admin-user-info">
+          <div id="admin-name" class="admin-user-name">Admin User</div>
+          <div class="admin-user-role">Administrator</div>
+        </div>
+      </div>
+      
+      <ul class="admin-nav">
+        <li class="admin-nav-item">
+          <a href="#" class="admin-nav-link active" data-admin-page="dashboard">
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+          </a>
+        </li>
+        <li class="admin-nav-item">
+          <a href="#" class="admin-nav-link" data-admin-page="users">
+            <i class="fas fa-users"></i> User Management
+          </a>
+        </li>
+        <li class="admin-nav-item">
+          <a href="#" class="admin-nav-link" data-admin-page="tournaments">
+            <i class="fas fa-trophy"></i> Tournament Management
+          </a>
+        </li>
+        <li class="admin-nav-item">
+          <a href="#" class="admin-nav-link" data-admin-page="rewards">
+            <i class="fas fa-gift"></i> Points & Rewards
+          </a>
+        </li>
+        <li class="admin-nav-item">
+          <a href="#" class="admin-nav-link" data-admin-page="payments">
+            <i class="fas fa-credit-card"></i> Payment & Redeem
+          </a>
+        </li>
+        <li class="admin-nav-item">
+          <a href="#" class="admin-nav-link" data-admin-page="ads">
+            <i class="fas fa-ad"></i> Ad Management
+          </a>
+        </li>
+        <li class="admin-nav-item">
+          <a href="#" class="admin-nav-link" data-admin-page="content">
+            <i class="fas fa-newspaper"></i> Content Management
+          </a>
+        </li>
+        <li class="admin-nav-item">
+          <a href="#" class="admin-nav-link" data-admin-page="referrals">
+            <i class="fas fa-user-friends"></i> Referral Program
+          </a>
+        </li>
+        <li class="admin-nav-item">
+          <a href="#" class="admin-nav-link" data-admin-page="security">
+            <i class="fas fa-shield-alt"></i> Security
+          </a>
+        </li>
+        <li class="admin-nav-item">
+          <a href="#" class="admin-nav-link" data-admin-page="social">
+            <i class="fas fa-share-alt"></i> Social Media
+          </a>
+        </li>
+        <li class="admin-nav-item">
+          <a href="#" class="admin-nav-link" data-admin-page="settings">
+            <i class="fas fa-cog"></i> Settings
+          </a>
+        </li>
+        <li class="admin-nav-item admin-nav-back">
+          <a href="#" class="admin-nav-link" id="back-to-site">
+            <i class="fas fa-arrow-left"></i> Back to Site
+          </a>
+        </li>
+      </ul>
+    </div>
+    
+    <!-- Main Content Area -->
+    <div class="admin-content">
+      <!-- Dashboard Page -->
+      <div id="admin-dashboard-page">
+        <div class="admin-header">
+          <h1 class="admin-title">Dashboard</h1>
+          <div class="admin-actions">
+            <button class="btn btn-primary" id="refresh-admin-data">
+              <i class="fas fa-sync-alt"></i> Refresh Data
+            </button>
+          </div>
+        </div>
+        
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+          <div class="stat-box">
+            <i class="fas fa-users"></i>
+            <div class="value" id="total-users">0</div>
+            <div class="label">Total Users</div>
+          </div>
+          <div class="stat-box">
+            <i class="fas fa-trophy"></i>
+            <div class="value" id="active-tournaments">0</div>
+            <div class="label">Active Tournaments</div>
+          </div>
+          <div class="stat-box">
+            <i class="fas fa-coins"></i>
+            <div class="value" id="total-earnings">0</div>
+            <div class="label">Total Earnings</div>
+          </div>
+          <div class="stat-box">
+            <i class="fas fa-user-plus"></i>
+            <div class="value" id="new-users">0</div>
+            <div class="label">New Users Today</div>
+          </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h2>Quick Actions</h2>
+          </div>
+          <div class="quick-actions-grid">
+            <div class="quick-action-card" id="create-tournament">
+              <i class="fas fa-trophy"></i>
+              <span>Create Tournament</span>
+            </div>
+            <div class="quick-action-card" id="add-user">
+              <i class="fas fa-user-plus"></i>
+              <span>Add User</span>
+            </div>
+            <div class="quick-action-card" id="edit-rewards">
+              <i class="fas fa-gift"></i>
+              <span>Edit Rewards</span>
+            </div>
+            <div class="quick-action-card" id="site-settings">
+              <i class="fas fa-cog"></i>
+              <span>Site Settings</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Recent Users -->
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h2>Recent Users</h2>
+            <button class="btn btn-sm btn-primary" id="view-all-users">View All</button>
+          </div>
+          <div class="admin-table-container">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Join Date</th>
+                  <th>Points</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="recent-users-table">
+                <tr>
+                  <td colspan="5" class="text-center">Loading users...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <!-- Recent Tournaments -->
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h2>Recent Tournaments</h2>
+            <button class="btn btn-sm btn-primary" id="view-all-tournaments">View All</button>
+          </div>
+          <div class="admin-table-container">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Tournament</th>
+                  <th>Date</th>
+                  <th>Prize Pool</th>
+                  <th>Participants</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="recent-tournaments-table">
+                <tr>
+                  <td colspan="6" class="text-center">Loading tournaments...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <!-- User Engagement Chart -->
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h2>User Engagement</h2>
+            <div class="chart-period-selector">
+              <button class="btn btn-sm btn-secondary active" data-period="day">Day</button>
+              <button class="btn btn-sm btn-secondary" data-period="week">Week</button>
+              <button class="btn btn-sm btn-secondary" data-period="month">Month</button>
+            </div>
+          </div>
+          <div class="chart-container">
+            <div id="engagement-chart" style="height: 300px; width: 100%;">
+              <!-- Chart will be rendered here -->
+              <div class="placeholder-chart">
+                <div style="text-align: center; padding: 120px 0; color: #888;">
+                  <i class="fas fa-chart-line" style="font-size: 40px; margin-bottom: 10px;"></i>
+                  <p>User engagement chart will be displayed here</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- System Status -->
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h2>System Status</h2>
+          </div>
+          <div class="status-grid">
+            <div class="status-item">
+              <div class="status-label">Server Status</div>
+              <div class="status-value"><span class="status-badge active">Online</span></div>
+            </div>
+            <div class="status-item">
+              <div class="status-label">Database</div>
+              <div class="status-value"><span class="status-badge active">Connected</span></div>
+            </div>
+            <div class="status-item">
+              <div class="status-label">Storage</div>
+              <div class="status-value"><span class="status-badge active">Available</span></div>
+            </div>
+            <div class="status-item">
+              <div class="status-label">Cache</div>
+              <div class="status-value"><span class="status-badge active">Working</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Other admin pages will be loaded dynamically -->
+    </div>
+  </div>
+
+  <!-- Custom Scripts -->
+  <script src="script.js"></script>
+  <script src="admin.js"></script>
+  
+  <script>
+    // Initialize admin panel with improved connectivity handling
+    document.addEventListener('DOMContentLoaded', function() {
+      // Firebase auth check
+      const firebaseConfig = {
+        apiKey: "AIzaSyBqDwc_TcqqBOICcM-djWShW250MsVQCvg",
+        authDomain: "flowing-athlete-452807-k6.firebaseapp.com",
+        projectId: "flowing-athlete-452807-k6",
+        storageBucket: "flowing-athlete-452807-k6.firebasestorage.app",
+        messagingSenderId: "1046325065023",
+        appId: "1:1046325065023:web:79ce007fa947b73ec6cf8a",
+        measurementId: "G-M65H20B0V5"
+      };
+      
+      // Initialize Firebase
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+      
+      // Get auth and db references
+      const auth = firebase.auth();
+      const db = firebase.firestore();
+      
+      // Configure Firestore for better performance
+      db.settings({
+        ignoreUndefinedProperties: true,
+        merge: true
+      });
+      
+      // Update loading screen
+      const loadingScreen = document.getElementById('loading-screen');
+      const adminPanel = document.getElementById('admin-panel');
+      
+      // Check connection state periodically
+      const checkConnectionStatus = () => {
+        if (navigator.onLine) {
+          // We're online, ensure Firebase network is enabled
+          if (db) {
+            db.enableNetwork().catch(err => {
+              console.warn('Error enabling network:', err);
+            });
+          }
+        }
+      };
+      
+      // Run initial check
+      checkConnectionStatus();
+      
+      // Set up online/offline event listeners
+      window.addEventListener('online', () => {
+        console.log('Browser reports online');
+        checkConnectionStatus();
+        // Show notification
+        showNotification('You are back online!', 'success');
+      });
+      
+      window.addEventListener('offline', () => {
+        console.log('Browser reports offline');
+        showNotification('You are currently offline.', 'warning');
+      });
+      
+      // Function to show notifications
+      function showNotification(message, type = 'info') {
+        // Create notification element if it doesn't exist
+        let notification = document.querySelector('.admin-notification');
+        
+        if (!notification) {
+          notification = document.createElement('div');
+          notification.className = `admin-notification ${type}`;
+          document.body.appendChild(notification);
+        } else {
+          notification.className = `admin-notification ${type}`;
+        }
+        
+        notification.textContent = message;
+        notification.style.display = 'block';
+        
+        // Hide after 5 seconds
+        setTimeout(() => {
+          notification.style.display = 'none';
+        }, 5000);
+      }
+      
+      // Check auth state
+      auth.onAuthStateChanged(function(user) {
+        if (user) {
+          const isAdmin = user.email && (
+            user.email === 'Jitenadminpanelaccess@gmail.com' || 
+            user.email === 'karateboyjitenderprajapat@gmail.com' || 
+            user.email.endsWith('@admin.tournamenthub.com')
+          );
+          
+          if (isAdmin) {
+            // User is admin by email, show admin panel
+            loadingScreen.style.display = 'none';
+            adminPanel.style.display = 'grid';
+            
+            // Update admin name and avatar
+            document.getElementById('admin-name').textContent = user.displayName || user.email;
+            if (user.photoURL) {
+              document.getElementById('admin-avatar').src = user.photoURL;
+            }
+            
+            // Load admin data
+            loadAdminDashboardData();
+            
+            // Set admin status in database if not already set
+            db.collection('users').doc(user.uid).get().then(doc => {
+              if (!doc.exists || !doc.data().isAdmin) {
+                db.collection('users').doc(user.uid).set({
+                  isAdmin: true,
+                  email: user.email,
+                  displayName: user.displayName || user.email,
+                  photoURL: user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName || 'Admin'}&background=random&color=fff`
+                }, { merge: true });
+              }
+            }).catch(err => {
+              console.warn('Error updating admin status:', err);
+              // Continue anyway since we know user is admin by email
+            });
+          } else {
+            // Check database for admin status as fallback
+            db.collection('users').doc(user.uid).get().then(doc => {
+              if (doc.exists && doc.data().isAdmin) {
+                // User is admin in database, show admin panel
+                loadingScreen.style.display = 'none';
+                adminPanel.style.display = 'grid';
+                
+                // Update admin name and avatar
+                document.getElementById('admin-name').textContent = user.displayName || user.email;
+                if (user.photoURL) {
+                  document.getElementById('admin-avatar').src = user.photoURL;
+                }
+                
+                // Load admin data
+                loadAdminDashboardData();
+              } else {
+                // User is not admin, redirect to home
+                window.location.href = '/';
+              }
+            }).catch(error => {
+              console.error('Error checking admin status:', error);
+              // Check if we should retry or redirect
+              if (navigator.onLine) {
+                showRetryPage();
+              } else {
+                window.location.href = '/';
+              }
+            });
+          }
+        } else {
+          // User is not signed in, redirect to login
+          window.location.href = '/';
+        }
+      });
+      
+      // Show retry page for database connection issues
+      function showRetryPage() {
+        loadingScreen.style.display = 'none';
+        document.body.innerHTML = `
+          <div style="padding: 2rem; text-align: center;">
+            <h1>Connection Error</h1>
+            <p>There was an error connecting to the database. Please try again.</p>
+            <button id="retry-btn" class="btn btn-primary">Retry Connection</button>
+            <a href="/" class="btn btn-secondary ml-3">Return to Homepage</a>
+          </div>
+        `;
+        
+        document.getElementById('retry-btn').addEventListener('click', function() {
+          location.reload();
+        });
+      }
+      
+      // Function to load admin dashboard data
+      function loadAdminDashboardData() {
+        // Load total users
+        db.collection('users').get().then(snapshot => {
+          document.getElementById('total-users').textContent = snapshot.size;
+        }).catch(error => {
+          console.error('Error loading users:', error);
+        });
+        
+        // Load active tournaments
+        db.collection('tournaments')
+          .where('status', '==', 'active')
+          .get()
+          .then(snapshot => {
+            document.getElementById('active-tournaments').textContent = snapshot.size;
+          }).catch(error => {
+            console.error('Error loading tournaments:', error);
+          });
+        
+        // Load total earnings (placeholder)
+        document.getElementById('total-earnings').textContent = '₹15,750';
+        
+        // Load new users today
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        db.collection('users')
+          .where('joinDate', '>=', today)
+          .get()
+          .then(snapshot => {
+            document.getElementById('new-users').textContent = snapshot.size;
+          }).catch(error => {
+            console.error('Error loading new users:', error);
+          });
+        
+        // Load recent users
+        db.collection('users')
+          .orderBy('joinDate', 'desc')
+          .limit(5)
+          .get()
+          .then(snapshot => {
+            const usersTable = document.getElementById('recent-users-table');
+            
+            if (snapshot.empty) {
+              usersTable.innerHTML = '<tr><td colspan="5" class="text-center">No users found</td></tr>';
+              return;
+            }
+            
+            let usersHTML = '';
+            snapshot.forEach(doc => {
+              const userData = doc.data();
+              usersHTML += `
+                <tr>
+                  <td>
+                    <div class="user-cell">
+                      <img src="${userData.photoURL || 'https://ui-avatars.com/api/?name=' + userData.displayName}" alt="User Avatar">
+                      <div>
+                        <div class="user-name">${userData.displayName}</div>
+                        <div class="user-email">${userData.email}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>${userData.joinDate ? new Date(userData.joinDate.toDate()).toLocaleDateString() : 'N/A'}</td>
+                  <td>${userData.points || 0}</td>
+                  <td><span class="status-badge ${userData.isVIP ? 'vip' : 'standard'}">${userData.isVIP ? 'VIP' : 'Standard'}</span></td>
+                  <td>
+                    <div class="table-actions">
+                      <button class="btn btn-sm btn-primary edit-user" data-user-id="${doc.id}"><i class="fas fa-edit"></i></button>
+                      <button class="btn btn-sm btn-danger toggle-ban" data-user-id="${doc.id}"><i class="fas fa-user-slash"></i></button>
+                    </div>
+                  </td>
+                </tr>
+              `;
+            });
+            
+            usersTable.innerHTML = usersHTML;
+            
+            // Setup action buttons
+            document.querySelectorAll('.edit-user').forEach(btn => {
+              btn.addEventListener('click', function() {
+                const userId = this.getAttribute('data-user-id');
+                showEditUserModal(userId);
+              });
+            });
+            
+            document.querySelectorAll('.toggle-ban').forEach(btn => {
+              btn.addEventListener('click', function() {
+                const userId = this.getAttribute('data-user-id');
+                toggleUserBan(userId, false);
+              });
+            });
+          })
+          .catch(error => {
+            console.error('Error loading recent users:', error);
+            document.getElementById('recent-users-table').innerHTML = 
+              '<tr><td colspan="5" class="text-center">Error loading users</td></tr>';
+          });
+          
+        // Load recent tournaments (placeholder data for now)
+        document.getElementById('recent-tournaments-table').innerHTML = `
+          <tr>
+            <td>BGMI Solo Battle</td>
+            <td>Aug 15, 2023</td>
+            <td>₹5,000</td>
+            <td>64/100</td>
+            <td><span class="status-badge upcoming">Upcoming</span></td>
+            <td>
+              <div class="table-actions">
+                <button class="btn btn-sm btn-primary edit-tournament" data-tournament-id="t1"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-danger delete-tournament" data-tournament-id="t1"><i class="fas fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Free Fire Duo Championship</td>
+            <td>Aug 10, 2023</td>
+            <td>₹3,000</td>
+            <td>48/64</td>
+            <td><span class="status-badge ongoing">Ongoing</span></td>
+            <td>
+              <div class="table-actions">
+                <button class="btn btn-sm btn-primary edit-tournament" data-tournament-id="t2"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-danger delete-tournament" data-tournament-id="t2"><i class="fas fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>COD Mobile Championship</td>
+            <td>Jul 28, 2023</td>
+            <td>₹7,000</td>
+            <td>128/128</td>
+            <td><span class="status-badge completed">Completed</span></td>
+            <td>
+              <div class="table-actions">
+                <button class="btn btn-sm btn-primary edit-tournament" data-tournament-id="t3"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-danger delete-tournament" data-tournament-id="t3"><i class="fas fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }
+    });
+  </script>
+</body>
+</html>

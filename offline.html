@@ -1,0 +1,81 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tournament Hub - Offline</title>
+  <link rel="stylesheet" href="offline.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+  <div class="offline-container">
+    <div class="offline-icon">
+      <i class="fas fa-wifi-slash"></i>
+    </div>
+    <h1>You're Offline</h1>
+    <p>We can't connect to Tournament Hub right now. This could be because:</p>
+    <ul class="error-list">
+      <li>You're not connected to the internet</li>
+      <li>Our servers might be experiencing issues</li>
+      <li>Your firewall or network is blocking the connection</li>
+    </ul>
+    <div class="action-buttons">
+      <button id="retry-connection" class="btn btn-primary">
+        <i class="fas fa-sync-alt"></i> Try Again
+      </button>
+      <button id="clear-cache" class="btn btn-secondary">
+        <i class="fas fa-broom"></i> Clear Cache
+      </button>
+    </div>
+    <div class="help-text">
+      <p>If problems persist, try clearing your browser cache or restarting your browser.</p>
+    </div>
+  </div>
+  
+  <script>
+    // Add listener to refresh when back online
+    window.addEventListener('online', function() {
+      window.location.reload();
+    });
+    
+    // Add listener to the retry button
+    document.getElementById('retry-connection').addEventListener('click', function() {
+      this.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Trying...';
+      window.location.reload();
+    });
+    
+    // Add listener to clear cache button
+    document.getElementById('clear-cache').addEventListener('click', function() {
+      this.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Clearing...';
+      
+      // Clear service worker cache
+      if ('caches' in window) {
+        caches.keys().then(function(cacheNames) {
+          return Promise.all(
+            cacheNames.map(function(cacheName) {
+              return caches.delete(cacheName);
+            })
+          );
+        }).then(function() {
+          // After clearing cache, reload the page
+          window.location.reload(true);
+        }).catch(function(error) {
+          console.error('Error clearing cache:', error);
+          window.location.reload(true);
+        });
+      } else {
+        // If caches API is not available, just reload the page
+        window.location.reload(true);
+      }
+    });
+    
+    // Check connection status periodically
+    setInterval(function() {
+      if (navigator.onLine) {
+        window.location.reload();
+      }
+    }, 10000); // Check every 10 seconds
+  </script>
+</body>
+</html>

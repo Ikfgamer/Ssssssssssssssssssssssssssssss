@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tournament Hub</title>
+  <meta name="description" content="Join tournaments, earn rewards, and compete with players worldwide.">
+  <meta name="theme-color" content="#1f2440">
+
+  <!-- Web App Manifest for PWA capabilities -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Icons for various platforms -->
+  <link rel="icon" type="image/png" href="favicon.ico">
+  <link rel="apple-touch-icon" href="icon-192x192.png">
+
+  <!-- Firebase Libraries -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
+
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+  <!-- Google Fonts with preloading for performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Offline fallback page -->
+  <link rel="stylesheet" href="offline.css" media="none" onload="if(navigator.onLine) this.media='all'">
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div id="loading-screen">
+    <div class="spinner"></div>
+    <p>Loading Tournament Hub...</p>
+  </div>
+
+  <!-- Connection issues fallback (hidden by default) -->
+  <div id="connection-fallback" style="display: none;">
+    <div class="offline-container">
+      <div class="offline-icon">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <h2>Connection Problem</h2>
+      <p>We're having trouble connecting to Tournament Hub. Please check your internet connection.</p>
+      <button id="retry-connection" class="btn btn-primary">
+        <i class="fas fa-sync-alt"></i> Refresh Page
+      </button>
+    </div>
+  </div>
+
+  <!-- Main App Container -->
+  <div id="app"></div>
+
+  <!-- Custom Scripts -->
+  <script src="script.js"></script>
+  
+  <!-- Admin Panel Link -->
+  <script>
+    // Check if user is admin and show admin panel link
+    firebase.auth().onAuthStateChanged(function(user) {
+      if (user) {
+        const isAdmin = user.email && (
+          user.email === 'Jitenadminpanelaccess@gmail.com' || 
+          user.email === 'karateboyjitenderprajapat@gmail.com' || 
+          user.email.endsWith('@admin.tournamenthub.com')
+        );
+        
+        if (isAdmin) {
+          const userDropdown = document.getElementById('user-dropdown');
+          if (userDropdown) {
+            // Check if admin panel link already exists
+            if (!document.getElementById('admin-panel-link')) {
+              // Create admin panel link
+              const adminLink = document.createElement('a');
+              adminLink.href = '/admin.html';
+              adminLink.id = 'admin-panel-link';
+              adminLink.innerHTML = '<i class="fas fa-cog"></i> Admin Panel';
+              
+              // Insert before logout button
+              const logoutButton = document.getElementById('logout-button');
+              if (logoutButton) {
+                userDropdown.insertBefore(adminLink, logoutButton);
+              } else {
+                userDropdown.appendChild(adminLink);
+              }
+            }
+          }
+        }
+      }
+    });
+  </script>
+
+  <!-- Connection detection -->
+  <script>
+    // Display connection fallback if no connection
+    function checkConnection() {
+      const connectionFallback = document.getElementById('connection-fallback');
+      const app = document.getElementById('app');
+      const loadingScreen = document.getElementById('loading-screen');
+
+      if (!navigator.onLine) {
+        // Check if app has already loaded
+        if (app.children.length === 0) {
+          connectionFallback.style.display = 'flex';
+          loadingScreen.style.display = 'none';
+        }
+      } else {
+        connectionFallback.style.display = 'none';
+      }
+    }
+
+    // Check connection status at startup
+    window.addEventListener('load', checkConnection);
+
+    // Recheck when online/offline events fire
+    window.addEventListener('online', () => {
+      document.getElementById('connection-fallback').style.display = 'none';
+      window.location.reload();
+    });
+
+    window.addEventListener('offline', checkConnection);
+
+    // Retry button functionality
+    document.getElementById('retry-connection').addEventListener('click', function() {
+      window.location.reload();
+    });
+  </script>
+</body>
+</html>
